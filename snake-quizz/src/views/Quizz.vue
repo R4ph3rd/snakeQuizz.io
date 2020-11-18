@@ -7,13 +7,16 @@
           </div>
       </div>
 
-      <v-list :items="answers" @teamChoiceMade="teamAction"></v-list>
+      <v-list :items="answers" :goodItem="goodResponse" @teamChoiceMade="teamAction"></v-list>
 
       <div class="alert" v-show="answer != ''">
           <div>
                 <p>Rabbits, <br>your team choose <strong>{{answer}}</strong> with <strong>{{votes}}</strong> votes.</p>
                 <p v-if="correctOrWrong" class="correct">Correct response !</p>
-                <p v-else class="wrong">Wrong response !</p>
+                <div v-else>
+                    <p class="wrong">Wrong response !</p>
+                    <p>It was <strong>{{goodResponse}}</strong></p>
+                </div>
           </div>
       </div>
   </div>
@@ -41,9 +44,22 @@ export default {
     },
     computed:{
         ...mapGetters(['getPlayerTurn', 'getQuestions']),
-        correctOrWrong(answer){
-            let rep = this.getQuestions[this.question].rep[this.getQuestions[this.question].answer];
-            return rep == this.answer;
+        correctOrWrong(){
+            if(this.getQuestions[this.question]){
+                let rep = this.getQuestions[this.question].rep[this.getQuestions[this.question].answer];
+                return rep == this.answer;
+            } else {
+                return undefined
+            }
+            
+        },
+        goodResponse(){
+            if(this.getQuestions[this.question]){
+                console.log(this.getQuestions[this.question].rep[this.getQuestions[this.question].answer])
+                return this.getQuestions[this.question].rep[this.getQuestions[this.question].answer];
+            } else {
+                return undefined
+            }
         },
         teamHasChoosen(){
             console.log(this.$children[0])
@@ -51,7 +67,8 @@ export default {
     },
     methods: {
         ...mapActions({
-            toggleMove : 'toggleMove'
+            toggleMove : 'toggleMove',
+            switchTurn: 'switchTurn'
         }),
         teamAction(action){
             console.log(action)
@@ -62,18 +79,28 @@ export default {
         },
         choiceMade(){
             setTimeout(() => {
-                if(this.$store.state.playerTurn == this.$store.state.me) this.toggleMove();
+                // if(this.$store.state.playerTurn == this.$store.state.me) 
+                if(this.correctOrWrong){
+                    console.log('correct');
+                    this.toggleMove();
+                } else {
+                    console.log('wrong ! don"t move');
+                    this.switchTurn('loose');
+                }
+
+                console.log(this.$store.state.move, this.$store.state.playerTurn)
                 
                 clearInterval(this.timer)
                 // this.$router.push('/');
             }, 2000)
         }
     },
-    mounted(){
+    created(){
         let questions = Object.keys(this.getQuestions);
         this.question = questions[Math.floor(Math.random() * questions.length)];
         this.answers = this.getQuestions[this.question].rep;
-
+    },
+    mounted(){
         this.timer = setInterval(() => {
             this.countdown -- ;
             if (this.countdown == 0){

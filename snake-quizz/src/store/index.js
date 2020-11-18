@@ -58,8 +58,8 @@ export default new Vuex.Store({
         state.countDownFakeMoves --;
       } 
     },
-    switchTurn(state){
-      if(state.countDownFakeMoves <= 0){
+    switchTurn(state, payload){
+      if(state.countDownFakeMoves <= 0 || payload == 'loose'){
         let i = state.users.findIndex(player => player == state.playerTurn) + 1;
         i = i >= state.users.length ? 0 : i;
         state.playerTurn = state.users[i];
@@ -200,8 +200,8 @@ export default new Vuex.Store({
     generateStartCases(context, payload){
       context.commit('generateStartCases', payload)
     },
-    switchTurn(context){
-      context.commit('switchTurn')
+    switchTurn(context, payload){
+      context.commit('switchTurn', payload);
     },
     toggleMove(context){
       context.commit('toggleMove')

@@ -22,6 +22,10 @@ export default {
     items: {
         type: [Array, Object],
         required: true
+    },
+    goodItem: {
+        type: String,
+        required: false
     }
  },
  data(){
@@ -34,10 +38,16 @@ computed:{
     ...mapGetters(['getUsers']),
 },
 created(){
-    this.tempUsers = this.getUsers.slice(0, this.getUsers.length);
+    this.tempUsers = this.getUsers.slice(0, this.getUsers.length - 1);
+    
+    if(this.goodItem){
+        let i = this.items.findIndex(item => item == this.goodItem);
+        this.usersSelected[i] = this.tempUsers.slice(0, this.tempUsers.length/2);
+        this.tempUsers = this.tempUsers.slice(this.tempUsers.length/2, this.tempUsers.length);
+    }
     
     if(Array.isArray(this.items)){
-        while( this.tempUsers.length > 1){
+        while( this.tempUsers.length > 0){
             let i = Math.floor(Math.random() * (this.items.length - 1));
 
             if(this.usersSelected[i]){
@@ -47,6 +57,7 @@ created(){
             }
         }
     }
+    console.log(this.usersSelected)
 },
 methods:{
     action(rep){
