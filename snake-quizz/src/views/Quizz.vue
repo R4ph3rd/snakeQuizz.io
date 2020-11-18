@@ -11,8 +11,8 @@
 
       <div class="alert" v-show="answer != ''">
           <div>
-                <p>Rabbit team, <br> you choose <strong>{{answer}}</strong></p>
-                <p v-if="getPlayerTurn == $store.state.me" class="correct">Correct response !</p>
+                <p>Rabbits, <br>your team choose <strong>{{answer}}</strong> with <strong>{{votes}}</strong> votes.</p>
+                <p v-if="correctOrWrong" class="correct">Correct response !</p>
                 <p v-else class="wrong">Wrong response !</p>
           </div>
       </div>
@@ -30,27 +30,33 @@ export default {
     },
     data(){
         return {
-            questions: ['Quelle est la couleur du ciel aujourd"hui ?'],
             answers: ['Blue', 'Rouge', 'Pink', 'Yellow', 'Cool', 'banana', 'oqudh spidg qydg pgyD PGSQPYDIGPGY'],
-            answer: '',
+            answer : '',
             countdown: 33,
             choice: false,
+            question: 'Lorem ipsum question',
+            votes: 0,
             timer: () => {}
         }
     },
     computed:{
-        ...mapGetters(['getPlayerTurn']),
-        question(){
-            return this.questions[Math.floor(Math.random() * this.questions.length)]
+        ...mapGetters(['getPlayerTurn', 'getQuestions']),
+        correctOrWrong(answer){
+            let rep = this.getQuestions[this.question].rep[this.getQuestions[this.question].answer];
+            return rep == this.answer;
+        },
+        teamHasChoosen(){
+            console.log(this.$children[0])
         }
     },
     methods: {
         ...mapActions({
             toggleMove : 'toggleMove'
         }),
-        teamAction(value){
-            console.log(value)
-            this.answer = value;
+        teamAction(action){
+            console.log(action)
+            this.answer = action.value;
+            this.votes = action.votes;
 
             this.choiceMade();
         },
@@ -59,11 +65,15 @@ export default {
                 if(this.$store.state.playerTurn == this.$store.state.me) this.toggleMove();
                 
                 clearInterval(this.timer)
-                this.$router.push('/');
+                // this.$router.push('/');
             }, 2000)
         }
     },
     mounted(){
+        let questions = Object.keys(this.getQuestions);
+        this.question = questions[Math.floor(Math.random() * questions.length)];
+        this.answers = this.getQuestions[this.question].rep;
+
         this.timer = setInterval(() => {
             this.countdown -- ;
             if (this.countdown == 0){

@@ -2,9 +2,9 @@
   <ul>
       <list-item
       v-for="(item, i) in items"
-      :key="item"
+      :key="item + i"
       :users="usersSelected[i]"
-      @select="action()"
+      @select="action"
       >{{item}}</list-item>
   </ul>
 </template>
@@ -49,16 +49,32 @@ created(){
     }
 },
 methods:{
-    action(){
-        setTimeout( () => {
-            let teamChoice = this.usersSelected.reduce((acc, cur, i) => {
-                if (cur.length > acc.length) return cur;
+    action(rep){
+        let i = this.items.findIndex(item => item == rep);
+        if (i != undefined){
+            // console.log(this.usersSelected)
+            const newval =  this.usersSelected[i] ? [this.$store.state.me].concat(this.usersSelected[i]) : [this.$store.state.me];
+            this.usersSelected.splice(i, 1, newval);
+        }
+
+        let teamChoice = this.usersSelected.reduce((acc, cur, i) => {
+                if (cur.length > acc.length && cur) return cur;
                 else return acc;
             }, [])
-
-            teamChoice.push(this.tempUsers.shift())
-            this.$emit('teamChoiceMade', this.items[this.usersSelected.findIndex( item => item == teamChoice)])
-        }, 1000)
+        // teamChoice.push(this.tempUsers.shift())
+        
+        setTimeout( () => {
+            let votes = 0;
+            let value = this.items[this.usersSelected.findIndex( item => {
+                if (item == teamChoice){
+                    votes = item.length;
+                    return true;
+                } else {
+                    return false;
+                }
+            })]
+            this.$emit('teamChoiceMade', {value: value, votes: votes})
+        }, 1500)
     }
 }
 }

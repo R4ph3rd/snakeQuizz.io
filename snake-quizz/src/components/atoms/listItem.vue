@@ -8,7 +8,7 @@
 
       <div class="users" v-if="users">
           <div v-for="user in users" :key="user" :class="user" class="bubble">
-              <img src="https://source.unsplash.com/random/30x30" alt="">
+              <img :src="$store.state.players[user].avatar" alt="">
           </div>
       </div>
   </li>
@@ -27,6 +27,14 @@ export default {
         select(){
             this.$el.children[0].checked = true
             this.$emit('select', this.$slots.default[0].text)
+        }
+    },
+    watch:{
+        users: {
+            handler(oldval, newval){
+                // console.log(oldval, newval)
+            },
+            deep: true
         }
     }
 }
@@ -68,6 +76,8 @@ export default {
 
                 img{
                     object-fit: cover;
+                    width:100%;
+                    height:100%;
                 }
             }
         }

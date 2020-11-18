@@ -1,10 +1,20 @@
 <template>
   <div class="gameboard" :style="params">
-    <v-case v-for="i in max" :key="gameboardLoaded ? i : caseOwner('case-' + i)" :id="'case-' + i" :owner="caseOwner('case-' + i)"></v-case>
+    <v-case 
+      v-for="i in max" 
+      :key="gameboardLoaded ? ownerKey(i) : i" :idCase="'case-' + i" 
+      :owner="owners['case-' + i]"
+      @moveHere="clickOncase"
+    ></v-case>
 
-    <div class="pawn" v-for="user of getUsers" :key="user" :style="pawnStyle" :class="user ==  $store.state.playerTurn ? user == $store.state.me && !$store.state.move ? 'active me' : 'active' : ''" :id="user" @click="wantToPlay(user)"></div>
-
-    <div v-for="(h,i) in highlights" class="hightlight-overlay" :key="upToMove ? 'highlight-' + i : 'hightlight-' + i + '-null'" @click="moveToCase(h.target)" :style="h.style"></div>
+    <div class="pawn" 
+      v-for="user of getUsers" 
+      :key="user" 
+      :style="pawnStyle" 
+      :class="user ==  $store.state.playerTurn ? user == $store.state.me && !$store.state.move ? 'active me' : 'active' : ''" 
+      :id="user" 
+      @click="wantToPlay(user)"
+    ></div>
   </div>
 </template>
 
@@ -25,13 +35,13 @@ export default {
         max: 400,
         pawns: [],
         highlights: [],
-        upToMove: false,
         territories:{},
-        gameboardLoaded:false
+        gameboardLoaded:false,
+        owners: []
       }
     },
     computed:{
-      ...mapGetters(['getUsers', 'getMove', 'getPlayerTurn']),
+      ...mapGetters(['getUsers', 'getMove', 'getPlayerTurn', 'getCountDownFakeMoves']),
       params(){
         let params = '';
         params += `grid-template-columns: repeat(${this.maxCases}, ${this.sizeCase}px);`
@@ -57,30 +67,43 @@ export default {
         generateStartCases : 'generateStartCases',
         switchTurn: 'switchTurn',
       }),
+      ownerKey(i){
+        return `${this.owners[i]}-${i}` ;
+      },
       caseOwner(caseId){
         if(this.territories[this.$store.state.playerTurn]){
           let owner = Object.keys(this.territories).find(owner => this.territories[owner].includes(caseId)); 
-          if(owner) return owner;
+          if(owner) {
+            if(this.owners[caseId] != owner){
+              console.log("aaaah ?", owner, caseId)
+            }
+            this.owners[caseId] = owner;
+            // console.log('ohoh ?', this.owners[caseId], caseId)
+          }
         }
       },
+      clickOncase(id){
+        this.owners.splice(id, 1, this.$store.state.playerTurn)
+        this.moveToCase(
+          Array.from(this.$children).find( child => child.$el.id == id)
+        );
+      },
       moveToCase(target){
+        console.log('///////////////////// new move ///////////////////////')
         const targetPawn = this.pawns.find(pawn => pawn.id == this.$store.state.playerTurn);
+        // console.log(this.$store.state.playerTurn, this.$store.state.players[targetPawn.id].pawnPos, target.$el.id)
         this.placePawn(targetPawn, target);
         this.setPlayerPos({user:targetPawn.id, pos: target.$el.id});
+        target.changeOwner(this.$store.state.playerTurn);
 
         // clear everything after move
         this.movePawn();
-        this.upToMove = false;
-        this.highlights = [];
 
         if(this.$store.state.playerTurn.trim() !== this.$store.state.me){
           let changeTurn = Math.random() > .5 ? true : false;
 
           if(changeTurn){
             this.switchTurn();
-            console.log(this.$store.state.playerTurn)
-            this.upToMove = false;
-            this.highlights = [];
             this.$emit('changeTurn')
           }
 
@@ -99,6 +122,8 @@ export default {
               else if (Number.isInteger(i/20)) i --;//right board
               else if (Number.isInteger((i -1)/20))i ++; //left board
               let targetCase = Array.from(this.$children).find( child => child.$el.id == 'case-' + i)
+              targetCase.changeOwner(this.$store.state.playerTurn);
+              console.log('targeting new case', targetCase.$el.id, this.$store.state.playerTurn)
             
               setTimeout(() => {
                 this.moveToCase(targetCase);
@@ -110,6 +135,7 @@ export default {
         for (let player in this.$store.state.players){
           for (let square of this.$store.state.players[player].cases){
               let target = Array.from(this.$children).find(child => child.$el.id == square);
+              this.caseOwner(target.$el.id)
 
               if(this.territories[player]){
                 this.territories[player].push(target.$el.id);
@@ -118,7 +144,7 @@ export default {
               }
 
               if(target.owner){
-                console.log(target.owner)
+                // console.log(target.owner)
               }
             }
         }
@@ -161,51 +187,12 @@ export default {
       wantToPlay(user ){
         if(this.$store.state.playerTurn == this.$store.state.me && user == this.$store.state.me && !this.$store.state.move) this.$router.push('/quizz')
       },
-      highlightCases(turn){
-        let pawnCase = this.$store.state.players[turn].pawnPos.split('-')[1];
-        const targets = Array.from(this.$children)
-          .filter(child => {
-            return [
-              `case-${(parseInt(pawnCase)  + 1)}`,
-              `case-${(parseInt(pawnCase)  - 1)}`,
-              `case-${(parseInt(pawnCase)  + this.maxCases)}`,
-              `case-${(parseInt(pawnCase)  - this.maxCases)}`
-             ].includes(child.$el.id)
-          })
-        Array.from(targets).forEach(target => {
-          if(Number.isInteger( (parseInt(target.$el.id.split('-')) - 1)/20 )){
-            // nowrap
-          } else {
-            this.highlights.push({
-              target: target,
-              style :`
-              width: ${this.sizeCase}px;
-              height: ${this.sizeCase}px;
-              background: ${this.$store.state.players[this.getPlayerTurn].color};
-              opacity: .5;
-              position:absolute;
-              top: ${target.$el.offsetTop}px;
-              left: ${target.$el.offsetLeft}px;
-              z-index:10;
-            `
-            })
-          }
-
-        })
-      }//|| pawnCase - 1 || pawnCase - 20 || pawnCase + 20
     },
     mounted(){
       this.genereate();
       this.gameboardLoaded = true;
       this.displayTerritories();
-
-      if(this.$store.state.move && this.$store.state.playerTurn == this.$store.state.me){
-        this.highlightCases(this.$store.state.playerTurn)
-        this.upToMove = !this.upToMove
-      } else {
-        // TODO : bloquer le tour de jeu pour les autres
-      }   
-    }
+    },
 }
 </script>
 
