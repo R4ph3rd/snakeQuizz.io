@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/snakeQuizz.io/dist/precache-manifest.d8c4ebf715229329c475373f40c0d63b.js"
+  "/snakequizz.io/precache-manifest.534d1da38bec697a690b88a9fe7a1eca.js"
 );
 
 workbox.core.setCacheNameDetails({prefix: "snake-quizz"});

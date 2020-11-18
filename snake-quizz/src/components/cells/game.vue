@@ -1,6 +1,6 @@
 <template>
   <div class="gameboard" :style="params">
-    <v-case v-for="i in max" :key="i" :id="'case-' + i"></v-case>
+    <v-case v-for="i in max" :key="gameboardLoaded ? i : caseOwner('case-' + i)" :id="'case-' + i" :owner="caseOwner('case-' + i)"></v-case>
 
     <div class="pawn" v-for="user of getUsers" :key="user" :style="pawnStyle" :class="user ==  $store.state.playerTurn ? user == $store.state.me && !$store.state.move ? 'active me' : 'active' : ''" :id="user" @click="wantToPlay(user)"></div>
 
@@ -25,7 +25,9 @@ export default {
         max: 400,
         pawns: [],
         highlights: [],
-        upToMove: false
+        upToMove: false,
+        territories:{},
+        gameboardLoaded:false
       }
     },
     computed:{
@@ -53,8 +55,14 @@ export default {
         movePawn: 'movePawn',
         winCase: 'winCase',
         generateStartCases : 'generateStartCases',
-        switchTurn: 'switchTurn'
+        switchTurn: 'switchTurn',
       }),
+      caseOwner(caseId){
+        if(this.territories[this.$store.state.playerTurn]){
+          let owner = Object.keys(this.territories).find(owner => this.territories[owner].includes(caseId)); 
+          if(owner) return owner;
+        }
+      },
       moveToCase(target){
         const targetPawn = this.pawns.find(pawn => pawn.id == this.$store.state.playerTurn);
         this.placePawn(targetPawn, target);
@@ -102,8 +110,20 @@ export default {
         for (let player in this.$store.state.players){
           for (let square of this.$store.state.players[player].cases){
               let target = Array.from(this.$children).find(child => child.$el.id == square);
-              target.$el.style.background = this.$store.state.players[player].color;
+
+              if(this.territories[player]){
+                this.territories[player].push(target.$el.id);
+              } else {
+                this.territories[player] = [target.$el.id];
+              }
+
+              if(target.owner){
+                console.log(target.owner)
+              }
             }
+        }
+        for (let owner in this.territories){
+          // let territory = this.territories[owner].sort((a,b) => a - b)  
         }
       },
       genereate(){
@@ -176,6 +196,7 @@ export default {
     },
     mounted(){
       this.genereate();
+      this.gameboardLoaded = true;
       this.displayTerritories();
 
       if(this.$store.state.move && this.$store.state.playerTurn == this.$store.state.me){

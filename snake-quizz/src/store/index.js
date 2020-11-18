@@ -126,6 +126,25 @@ export default new Vuex.Store({
           state.players[payload.user].cases.push('case-' + (iCase + x))
         }
       }
+
+      // CLEAN DOUBLONS
+      let territories = Object.keys(state.players).map(player => state.players[player].cases)
+      for (let territory of territories){
+        let othersTerritories = territories.filter(ter => ter !== territory);
+        let doublons = othersTerritories.flat().filter(square => territory.includes(square))
+        let player = Object.keys(state.players).find(player => {
+          return state.players[player].cases === territory;
+        })
+
+        doublons.forEach(doublon => {
+          state.players[player].cases.splice(
+            state.players[player].cases.findIndex(c => c == doublon),
+            1
+          )
+        })
+        
+        
+      }
     }
   },
   actions: {

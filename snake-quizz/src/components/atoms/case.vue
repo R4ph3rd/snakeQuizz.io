@@ -1,22 +1,32 @@
 <template>
-  <div class=" case none" :style="'--color:' + color"></div>
+  <div class=" case none" :style="this.owner ? 'background:' + color : ''"></div>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
 export default {
     name: 'Case',
-    data(){
-        return {
-            color: 'white'
+    props:{
+        owner:{
+            type:String,
+            required:false,
         }
     },
-    watch:{
-        color(newval, oldval){
-            console.log('cooooooool')
-            console.log(newval)
+    data(){
+        return {
+            color:  'rgba(130,130,130)' //this.owner ? this.$store.state.players[this.owner].color :
         }
-    }
+    },
+    mounted(){
+        if(this.owner){
+            this.color = this.$store.state.players[this.owner].color
+        }
+    },
+    /* watch:{
+        color(newval, oldval){
+            this.$forceUpdate();
+        }
+    } */
 }
 </script>
 
