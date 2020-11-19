@@ -3,48 +3,67 @@ import Vuex from 'vuex'
 
 Vue.use(Vuex)
 
-const me = 'Rabbit';
+const myTeam = 'SmartSnakes';
 
 export default new Vuex.Store({
   state: {
-    me: me,
-    users: ['SuperWursts', 'The cool X', 'Tom & jerry', 'Coooooool', me],
-    playerTurn: me,
+    me: myTeam,
+    users: ['Die Superhelden', 'Die fantastischen Fünf', 'Die Gangster', 'Die Kappos', myTeam], // TODO : teammates names 
+    teammates: ['Rose Sth', 'Mark', 'Hannah Fbg', 'Anna Sf', 'Oliver'],
+    teamMateTurn: 4,
+    playerTurn: myTeam,
     move: false,
-    currentStack: 3,
+    currentStack: 20,
     totalStack: 30,
     colors : ['#555E7B', '#B7D968', '#FDE47F', '#B576AD', '#E04644'],
     players: {},
+    messages: [],
     countDownFakeMoves: 3,
     questions: {
-      "What is the capital of Germany ?" : {
-        rep: ["Paris", 'Stuttgart', 'Berlin', 'Munich', 'Copenhagen'],
+      "Was ist die Hauptstadt von Deutschland?" : {
+        rep: ["München", 'Köln', 'Berlin', 'Munich', 'Hamburg'],
         answer : 2
       },
-      "Who is the current chancellor of Germany ?" : {
-        rep: ["Michel Barnier", 'Ursula Von Der Leyen', 'Jacques Chirac', 'Donald Trump', 'Angela Merkel'],
-        answer : 4
+      "Der Mond besteht aus..." : {
+        rep: ["Käse", 'Gestein', 'Kuchen', 'alles falsch! Das ist der Mannemond'],
+        answer : 1
       },
-      "When was Germany reunified ?" : {
-        rep: ["October, the  3st of 1990", 'October, the  2nd of 1989', 'October, the  8st of 1989', 'October, the  8th of 1990'],
-        answer : 0
+      "In welchem Monat feiern die meisten Menschen Neujahr?" : {
+        rep: ["Dezember", 'Februar', 'Januar', 'November'],
+        answer : 2
       },
-      "How big is the german population" : {
-        rep: ['Around 65 M', 'Around 90', 'Around 46', "Around 83 M",],
+      "Welche Farbe entsteht, wenn man Rot und Gelb mischt?" : {
+        rep: ['Rosa', 'Lila', 'Grau', "Orange",],
         answer : 3
       },
-      "This is a question to make you loose." : {
+      "Wer verkündet das Urteil im Gericht?" : {
         rep: ['Loose', 'Loose', 'loose', "Loose",],
         answer : -1
       },
-      "Where is the European Parliament ?" : {
-        rep: ['Prague', 'Strasbourg', 'Cologne', 'Amsterdam', "Bruxelles",],
-        answer : 1
+      "Wer verkündet das Urteil im Gericht?" : {
+        rep: ['Richter', 'Staatsanwalt', 'Bürgermeister', 'Angeklagter',],
+        answer : 0
       },
-      "What are the three officials 'procedurials' languages of UE ?" : {
-        rep: ["English, Spanish, French", "English, Spanish, German", 'English, French, German',, "German, Spanish, French"],
+      "Wie heißt der kleinste Vogel?" : {
+        rep: ["Spatz", "Rabe", 'Kolibri', "Hummel"],
         answer : 2
       },
+      "Welches ist der längste Fluss der Welt?":{
+        rep: ["Lech", "Nil", "Wertach", "Mekong"],
+        answer: 1
+      },
+      "Wie heißen die ursprünglichen Bewohner Australiens?":{
+        rep: ["Indianer", "Australian Natives", "Koalas", "Aborigines"],
+        answer: 3
+      },
+      "Die Europa-Hymne ist":{
+        rep: ["Mozarts Zauberflöte", "Beethovens 9. Sinfonie", "Schuberts Forellenquintett", "Verdis La Traviata",],
+        answer: 1
+      },
+      "Der karthargische Feldherr Hannibal zog im Zweiten Punischen Krieg wegen eines Kriegs mit seiner Truppe über die Alpen. Welche ungewöhnlichen Tiere begleiteten ihn damals?":{
+        rep:["Elefanten", "Zecken", "Giraffen","Fledermäuse"],
+        answer: 0
+      }
     },
     pics: [
       'https://images.generated.photos/b1dgGoLm2dFYmqaN-uLj112fvre5lVUtPderLUV5IY0/rs:fit:512:512/Z3M6Ly9nZW5lcmF0/ZWQtcGhvdG9zL3Yz/XzAyMTA0OTkuanBn.jpg',
@@ -62,24 +81,39 @@ export default new Vuex.Store({
     toggleMove(state, payload){
       state.move = !state.move;
     },
+    decreaseQuestionsStack(state, payload){
+      state.currentStack --;
+    },
     movePawn(state, payload){
       if(state.move){
-        state.currentStack --;
         if(payload){
           if(payload.fake){
             state.countDownFakeMoves --;
           }
         }
+        if(state.playerTurn == state.me){
+          console.log('team turn : ', state.teamMateTurn, state.teammates[state.teamMateTurn])
+            if(state.teamMateTurn >= state.teammates.length - 1){
+              state.teamMateTurn = 0;
+            } else {
+              state.teamMateTurn ++;
+            }
+            console.log('team turn : ', state.teamMateTurn, state.teammates[state.teamMateTurn])
+        }
       } 
     },
     switchTurn(state, payload){
       if(state.countDownFakeMoves <= 0 || payload == 'loose'){
-        let i = state.users.findIndex(player => player == state.playerTurn) + 1;
+        let i = state.users.findIndex(player => player == state.playerTurn) + 1;  
         i = i >= state.users.length ? 0 : i;
         state.playerTurn = state.users[i];
 
         state.countDownFakeMoves = 2 + Math.floor(Math.random() * 7)
         console.log('switch turn', state.playerTurn, state.countDownFakeMoves)
+        state.messages.push({
+          content: `Das Team <strong>${state.playerTurn}</strong> ist nun an der Reihe!`,
+          color: state.players[state.playerTurn].color
+        })
       }
     },
     setup(state){
@@ -90,6 +124,17 @@ export default new Vuex.Store({
           cases: [],
           avatar: state.pics.shift()
         };
+
+        state.messages.push({
+          content: `Das Team <strong>${user}</strong> ist nun an der Reihe!`,
+          color: state.players[user].color
+        })
+      }
+      for (let user of state.users){
+        state.messages.push({
+          content: `Das Team <strong>${user}</strong> ist nun an der Reihe!`,
+          color: state.players[user].color
+        })
       }
     },
     setPlayerPos(state, payload){
@@ -194,11 +239,17 @@ export default new Vuex.Store({
         
         
       }
+    },
+    sendMessage(state, payload){
+      state.messages.push(payload);
     }
   },
   actions: {
     setup(context){
       context.commit('setup')
+    },
+    decreaseQuestionsStack(context ,payload){
+      context.commit('decreaseQuestionsStack');
     },
     setPlayerPos(context, payload){
       context.commit('setPlayerPos', payload)
@@ -224,6 +275,9 @@ export default new Vuex.Store({
     },
     toggleMove(context){
       context.commit('toggleMove')
+    },
+    sendMessage(context, payload){
+      context.commit('sendMessage', payload)
     }
     
   },
@@ -245,6 +299,13 @@ export default new Vuex.Store({
     },
     getQuestions(state){
       return state.questions
+    },
+    getTeammates(state){
+      return state.teammates;
+    },
+    getMessages(state){
+      return state.messages;
     }
+    
   }
 })

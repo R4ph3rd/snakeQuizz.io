@@ -38,8 +38,8 @@ export default {
 <style lang="scss" scoped>
     .grid{
         display:grid;
-        grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-        grid-auto-rows: max-content;
+        grid-template-columns: repeat(5, 18vh);
+        grid-auto-rows: 18vh;
         grid-column-gap: 20px;
         grid-row-gap: 20px;
 

@@ -28,6 +28,12 @@ export default {
     components:{
       'v-case': vcase
     },
+    props:{
+      autoMove:{
+        type: Boolean,
+        required: false
+      }
+    },
     data(){
       return{
         maxCases: 20,
@@ -102,7 +108,6 @@ export default {
 
         if(this.auto){
           this.movePawn('auto');
-          console.log('auto')
           this.automaticMoves();
 
         } else {
@@ -110,44 +115,61 @@ export default {
         }
 
       },
-      automaticMoves(){
+      automaticMoves(fakeTeam){
         let changeTurn = Math.random() > .5 ? true : false;
 
-        if(changeTurn || this.$store.state.countDownFakeMoves <= 0 && this.$store.state.currentStack > 0){
-          this.switchTurn('loose');
-          this.$emit('changeTurn')
-          // console.log('auto change turn', this.$store.state.playerTurn, this.$store.state.countDownFakeMoves)
+        if(!fakeTeam){
+          if(changeTurn || this.$store.state.countDownFakeMoves <= 0 && this.$store.state.currentStack > 0){
+            this.switchTurn('loose');
+            this.$emit('changeTurn')
+            // console.log('auto change turn', this.$store.state.playerTurn, this.$store.state.countDownFakeMoves)
 
-          if(this.$store.state.playerTurn == this.$store.state.me){
-            this.auto = false;
-            if(this.$store.state.move){
-              this.toggleMove();
+            if(this.$store.state.playerTurn == this.$store.state.me){
+              this.auto = false;
+              if(this.$store.state.move){
+                this.toggleMove();
+              }
             }
           }
         }
 
-        if(this.auto){
-          // console.log(this.$store.state.playerTurn, this.pawns)
-          // console.log('------------- auto move -------------')
-          const updateTargetPawn = this.pawns.find(pawn => pawn.id == this.$store.state.playerTurn);
-          let rand = Math.random() < .25 ?
-                  -1 :
-                  Math.random() > .25 && Math.random() > .5 ?
-                  1 : 
-                  Math.random() > .5 && Math.random() > .75 ?
-                  -20 :
-                  20;
-          let i = parseInt(this.$store.state.players[updateTargetPawn.id].pawnPos.split('-')[1]) + rand;
-          if( i < 0) i == 20;
-          else if(i > this.max * this.max ) i =  (this.max * this.max) - 1 
-          else if (Number.isInteger(i/20)) i --;//right board
-          else if (Number.isInteger((i -1)/20))i ++; //left board
-          // let targetCase = Array.from(this.$children).find( child => child.$el.id == 'case-' + i)
-          // console.log('target:', i)
+        const updateTargetPawn = this.pawns.find(pawn => pawn.id == this.$store.state.playerTurn);
+        let rand = Math.random() < .25 ?
+                -1 :
+                Math.random() > .25 && Math.random() > .5 ?
+                1 : 
+                Math.random() > .5 && Math.random() > .75 ?
+                -20 :
+                20;
+        let i = parseInt(this.$store.state.players[updateTargetPawn.id].pawnPos.split('-')[1]) + rand;
+        console.log('###################"')
+        console.log('i:', i)
+        if( i < 0) i == 20;
+        else if(i > this.max * this.max ) i =  (this.max * this.max) - 1 
+        else if (Number.isInteger(i/20)) i --;//right board
+        else if (Number.isInteger((i -1)/20))i ++; //left board
+        console.log('i:', i)
+        console.log('###################"')
 
+        if(this.auto){
+          if(changeTurn){
+            setTimeout(() => {
+              this.moveToCase('case-' + i); // TODO: should be sync to autoMove
+            },3000)
+          } else {
+            setTimeout(() => {
+              this.moveToCase('case-' + i);
+            },1000)
+          }
+        } else if (fakeTeam){
           setTimeout(() => {
             this.moveToCase('case-' + i);
-          },1000)
+            console.log('fake team !')
+            setTimeout(() => {
+              console.log('ok cest cool')
+              this.$router.push('/quizz');
+            }, 2000)
+          }, 3000)
         }
          
       },
@@ -219,8 +241,15 @@ export default {
       this.displayTerritories();
 
       if(this.auto){
-        this.automaticMoves();
+        setTimeout(() => this.automaticMoves(), 3000) // TODO : should be sync to automove 
       }
+
+      if( 
+        this.$store.state.move && 
+        this.$store.state.playerTurn == this.$store.state.me && 
+        this.$store.state.teamMateTurn != this.$store.state.teammates.length - 1){
+          this.automaticMoves(true);
+        }
     },
 }
 </script>
@@ -255,7 +284,7 @@ export default {
       &:hover .pawnName{
           display:block;
           left:30px;
-          color:black;
+          color:white;
           font-weight:700;
           white-space: nowrap;
       }

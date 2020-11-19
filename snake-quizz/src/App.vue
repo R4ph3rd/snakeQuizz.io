@@ -3,32 +3,34 @@
     <section>
       <router-view id="table"/>
 
+      <!-- <p class="teammove" v-if="$store.state.move && $store.state.playerTurn == $store.state.me">{{$store.state.teammates[$store.state.teamMateTurn]}} ist am Zug!</p> -->
+
       <grid> 
             <user-cam 
-              v-for="(user, i) in getUsers" 
+              v-for="(user, i) in getTeammates" 
               :key="user" 
               :username="user" 
-              :me="user == $store.state.me"
-              :height="user == $store.state.me ? camSize/1.5 : camSize"
-              :width="user == $store.state.me ? camSize/1.5 : camSize"
-              :pic="user == $store.state.me ? '' : pics[i]">
+              :me="user == 'Oliver'"
+              :pic="pics[i]">
             </user-cam>
         </grid> 
     </section>
-    <section class="chat"></section>
+    <v-chat></v-chat>
   </div>
 </template>
 
 <script>
 import userCam from './components/atoms/userCam'
 import grid from './components/molecules/grid'
+import chat from './components/cells/chat'
 import {mapActions, mapGetters} from 'vuex';
 
 export default {
   name:'App',
   components: {
     'user-cam': userCam,
-    'grid': grid
+    'grid': grid,
+    'v-chat': chat
   },
   data(){
     return {
@@ -47,9 +49,9 @@ export default {
     }
   },
   computed:{
-    ...mapGetters(['getUsers']),
+    ...mapGetters(['getUsers', 'getTeammates']),
     camSize(){
-      return (this.appWidth - 60 - (this.getUsers.length * 20))/(this.getUsers.length)
+      return (this.appWidth - 100 - (this.getUsers.length * 20))/(this.getUsers.length)
     }
   },
   methods:{
@@ -103,27 +105,28 @@ export default {
   display:grid;
   grid-template-columns: 75% auto;
   min-height:100vh;
+  max-height:100vh;
   min-width: 100vw;
+
+  overflow:hidden
 }
 
-
-
-.chat{
-  width:100%;
-  height:100%;
-  background:$gray05;
+.teammove{
+  margin-bottom: 20px;
 }
 
 .grid{
     align-items:end;
-    justify-items: start;
+    justify-items: center;
     justify-content: center;
     margin-left:30px;
     margin-right:30px;
+    margin-bottom:20px;
   }
 
 #table{
   padding:30px;
-  height: calc(100% - 200px)
+  padding-bottom:0;
+  height: 80vh;
 }
 </style>

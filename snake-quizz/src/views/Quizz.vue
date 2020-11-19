@@ -1,22 +1,23 @@
 <template>
   <div>
       <div class="title">
-          <h2>{{question}}</h2>
           <div class="timer">
               <p>{{countdown}}</p>
           </div>
+          <h2>{{question}}</h2>
       </div>
 
       <v-list :items="answers" :goodItem="goodResponse" @teamChoiceMade="teamAction"></v-list>
 
       <div class="alert" v-show="answer != ''">
           <div>
-                <p>Rabbits, <br>your team choose <strong>{{answer}}</strong> with <strong>{{votes}}</strong> votes.</p>
-                <p v-if="correctOrWrong" class="correct">Correct response !</p>
+                <p>Dein Team <strong :style="'color:' + $store.state.players[$store.state.me].color" >{{$store.state.me}}</strong> hat die Antwort <strong>{{answer}}</strong> mit <strong>{{votes}}</strong>  Stimmen gewählt.</p>
+                <p v-if="correctOrWrong" class="correct">Richtige Antwort!</p>
                 <div v-else>
-                    <p class="wrong">Wrong response !</p>
-                    <p>It was <strong>{{goodResponse}}</strong></p>
+                    <p class="wrong">Falsche Antwort!</p>
+                    <p><strong>{{goodResponse}}</strong> wäre richtig gewesen.</p>
                 </div>
+                <v-buton @click.native="next()"></v-buton>
           </div>
       </div>
   </div>
@@ -24,12 +25,14 @@
 
 <script>
 import list from '../components/molecules/list';
+import button from '../components/atoms/button';
 import {mapGetters, mapActions} from 'vuex';
 
 export default {
     name: 'Quizz',
     components:{
-        'v-list': list
+        'v-list': list,
+        'v-buton':button
     },
     data(){
         return {
@@ -68,7 +71,8 @@ export default {
     methods: {
         ...mapActions({
             toggleMove : 'toggleMove',
-            switchTurn: 'switchTurn'
+            switchTurn: 'switchTurn',
+            decreaseQuestionsStack: 'decreaseQuestionsStack'
         }),
         teamAction(action){
             console.log(action)
@@ -77,11 +81,15 @@ export default {
 
             this.choiceMade();
         },
+        next(){
+            this.$router.push('/');
+        },
         choiceMade(){
             setTimeout(() => {
                 if(this.correctOrWrong){
                     console.log('correct');
                     this.toggleMove('correct');
+                    this.decreaseQuestionsStack();
                 } else {
                     console.log('wrong ! don"t move');
                     this.switchTurn('loose');
@@ -89,7 +97,7 @@ export default {
                 
                 clearInterval(this.timer)
                 this.$router.push('/');
-            }, 2000)
+            }, 4000) // TODO : more time setimeout + chats history
         }
     },
     created(){
@@ -115,8 +123,7 @@ export default {
 <style scoped lang="scss">
 
 h2{
-    margin-top:50px;
-    margin-bottom:100px;
+    text-align:left;
 }
 
 ul{
@@ -126,9 +133,20 @@ ul{
     max-height: 50vh;
 }
 
+
+.title{
+    display:grid;
+    grid-template-columns: 80px auto;
+    grid-column-gap: 50px;
+    align-items:center;
+    justify-items: start;
+    margin-top:50px;
+    margin-bottom:100px;
+}
+
 .timer{
-    position: absolute;
-    top:-30px;
+    /* position: absolute;
+    top:-30px; */
     
     width:80px;
     height:80px;
@@ -176,7 +194,7 @@ ul{
             }
 
             &.wrong{
-                color: rgb(228, 131, 131)
+                color: rgb(228, 131, 131);
             }
         }
     }

@@ -1,9 +1,9 @@
 <template>
-  <div class="videoUser" :style="params">
+  <div class="videoUser" :style="params" :class="myTurn ? 'teamMateTurn' : ''">
       <!-- <video v-if="pic != null" src=""></video> -->
       <img :src="pic" alt="">
 
-      <p v-if="userDisplay">{{username}}</p>
+      <p :style="teamColor">{{username == 'Oliver' ? username + ' (you)' : username}}</p>
   </div>
 </template>
 
@@ -35,10 +35,13 @@ export default {
             type: Number,
             required: false
         }
-    },
+    }, // team walk move to show
     computed: {
         userDisplay(){
             return !this.me;
+        },
+        teamColor(){
+            return 'background:' + this.$store.state.players[this.$store.state.me].color;
         },
         params(){
             let params = '';
@@ -48,8 +51,12 @@ export default {
             if(this.width){
                 params += 'width:' + this.width + 'px;'; 
             }
+            params += '--color:' + this.$store.state.players[this.$store.state.me].color;
             // console.log('params',params)
             return params;
+        },
+        myTurn(){
+            return this.$store.state.playerTurn == this.$store.state.me && this.$store.state.move && this.$store.state.teammates[this.$store.state.teamMateTurn] == this.username;
         }
     },
     mounted(){
@@ -60,8 +67,8 @@ export default {
 
 <style scoped lang="scss">
 .videoUser{
-    width:200px;
-    height:200px;
+    width:100%;
+    height:100%;
 
     display: grid;
     grid-template-rows: auto 30px;
@@ -84,8 +91,12 @@ export default {
         justify-content: center;
         padding:10px;
         text-align:center;
-        background: rgb(50,50,50);
         color:white;
+    }
+
+    &.teamMateTurn{
+        border: 2px solid var(--color);
+        box-shadow: 0 0 8px var(--color);
     }
 }
 </style>

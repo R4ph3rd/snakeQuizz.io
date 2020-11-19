@@ -1,6 +1,11 @@
 <template>
   <div>
-      <h2>Questions stack</h2>
+      <h2>Verbleibende Fragen</h2>
+      <div class="stock">
+          <p>{{$store.state.currentStack}}</p>
+          <span class="line"></span>
+          <p>{{$store.state.totalStack}}</p>
+      </div>
       <span>
           <span id="currentStack" :style="height"></span>
       </span>
@@ -34,8 +39,27 @@ div{
         margin-bottom:20px;
     }
 
+    .stock{
+        width:100%;
+        max-width:60px;
+        height:max-content;
+        margin-bottom:12px;
+
+        p {
+            font-weight:700;
+        }
+
+        span{
+            width:100%;
+            height:2px;
+            padding:0;
+            margin-top:8px;
+            margin-bottom:8px;
+        }
+    }
+
     span{
-        height:80%;
+        height:75%;
         width:80px;
         display:flex;
         align-items:flex-end;

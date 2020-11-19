@@ -3,7 +3,7 @@
 
     <stack class="stack"></stack>
 
-    <game-board class="game" @changeTurn="displayNewAlert()"></game-board>
+    <game-board class="game" :autoMove="timeDown" @changeTurn="displayNewAlert()"></game-board>
 
     <section class="team" :style="'--color:' + color ">
       <div>
@@ -12,13 +12,22 @@
       </div>
     </section> 
 
+    <p v-if="$store.state.move"></p>
+
     <div class="alert" v-show="timeDown"> 
-        <p>It's up to the <strong>{{$store.state.playerTurn}} team</strong> to play !</p>
+        <div>
+          <p ><strong :style="teamColor">Team {{$store.state.playerTurn}}</strong>  ist am Zug!</p>
+          <p class="teammove" v-if="$store.state.move && $store.state.playerTurn == $store.state.me">{{$store.state.teammates[$store.state.teamMateTurn]}} ist am Zug!</p>
+          <v-buton @click.native="timeDown = !timeDown"></v-buton>
+        </div>
     </div>
 
     <div class="alert" v-if="gameEnded"> 
-        <p>Game Ended ! </p>
-        <p class="winTeam"><strong>{{winningTeam}}</strong> won with {{$store.state.players[winningTeam].cases.length}} cases!</p>
+        <div>
+          <p>Das Spiel ist beendet! </p>
+          <p class="winTeam">Das Team <strong :style="teamColor">{{winningTeam}}</strong> hat mit  einer Anzahl von {{$store.state.players[winningTeam].cases.length}} Feldern gewonnen!</p>
+          <v-buton @click.native="gameEnded = !gameEnded"></v-buton>
+        </div>
     </div>
   </div>
 </template>
@@ -26,12 +35,14 @@
 <script>
 import stack from '../components/atoms/stack'
 import game from '../components/cells/game'
+import buton from '../components/atoms/button'
 
 export default {
   name: 'Home',
   components: {
     'stack': stack,
-    'game-board': game
+    'game-board': game,
+    'v-buton': buton
   },
   data(){
     return {
@@ -52,18 +63,21 @@ export default {
       return Object.keys(this.$store.state.players).find(player => {
         return this.$store.state.players[player].cases === biggest;
       })
+    },
+    teamColor(){
+      return 'color:' + this.$store.state.players[this.$store.state.playerTurn].color
     }
   },
   methods: {
     displayNewAlert(){
       console.log('new alert', this.$store.state.playerTurn)
       this.timeDown = true ;
-      setTimeout(() => this.timeDown = false, 2500)
+      setTimeout(() => this.timeDown = false, 3000)
     }
   },
   mounted(){
     this.color = this.$store.state.players[this.$store.state.me].color;
-    setTimeout(() => this.timeDown = false, 1000)
+    setTimeout(() => this.timeDown = false, 3000)
   }
 }
 </script>
@@ -123,9 +137,13 @@ export default {
     align-items: center;
     background: rgba(0,0,0,.5);
 
-    p{
+    div{
         padding: 50px;
         background:white;
+
+        p:nth-child(2){
+          margin-top:20px;
+        }
     }
     
 }
