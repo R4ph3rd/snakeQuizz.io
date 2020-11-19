@@ -57,7 +57,6 @@ created(){
             }
         }
     }
-    console.log(this.usersSelected)
 },
 methods:{
     action(rep){

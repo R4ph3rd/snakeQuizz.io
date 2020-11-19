@@ -3,17 +3,19 @@ import Vuex from 'vuex'
 
 Vue.use(Vuex)
 
+const me = 'Rabbit';
+
 export default new Vuex.Store({
   state: {
-    me: 'Rabbit',
-    users: ['Oliver Twist', 'Charles Dickens', 'Michel Foucault', 'Jimi Henderson', 'Rabbit'],
-    playerTurn: 'Rabbit',
+    me: me,
+    users: ['SuperWursts', 'The cool X', 'Tom & jerry', 'Coooooool', me],
+    playerTurn: me,
     move: false,
-    currentStack: 30,
+    currentStack: 3,
     totalStack: 30,
     colors : ['#555E7B', '#B7D968', '#FDE47F', '#B576AD', '#E04644'],
     players: {},
-    countDownFakeMoves: 1,
+    countDownFakeMoves: 3,
     questions: {
       "What is the capital of Germany ?" : {
         rep: ["Paris", 'Stuttgart', 'Berlin', 'Munich', 'Copenhagen'],
@@ -35,6 +37,14 @@ export default new Vuex.Store({
         rep: ['Loose', 'Loose', 'loose', "Loose",],
         answer : -1
       },
+      "Where is the European Parliament ?" : {
+        rep: ['Prague', 'Strasbourg', 'Cologne', 'Amsterdam', "Bruxelles",],
+        answer : 1
+      },
+      "What are the three officials 'procedurials' languages of UE ?" : {
+        rep: ["English, Spanish, French", "English, Spanish, German", 'English, French, German',, "German, Spanish, French"],
+        answer : 2
+      },
     },
     pics: [
       'https://images.generated.photos/b1dgGoLm2dFYmqaN-uLj112fvre5lVUtPderLUV5IY0/rs:fit:512:512/Z3M6Ly9nZW5lcmF0/ZWQtcGhvdG9zL3Yz/XzAyMTA0OTkuanBn.jpg',
@@ -52,10 +62,14 @@ export default new Vuex.Store({
     toggleMove(state, payload){
       state.move = !state.move;
     },
-    movePawn(state){
+    movePawn(state, payload){
       if(state.move){
         state.currentStack --;
-        state.countDownFakeMoves --;
+        if(payload){
+          if(payload.fake){
+            state.countDownFakeMoves --;
+          }
+        }
       } 
     },
     switchTurn(state, payload){
@@ -64,8 +78,8 @@ export default new Vuex.Store({
         i = i >= state.users.length ? 0 : i;
         state.playerTurn = state.users[i];
 
-        state.countDownFakeMoves = Math.floor(Math.random() * 5)
-        console.log('switch turn', state.playerTurn)
+        state.countDownFakeMoves = 2 + Math.floor(Math.random() * 7)
+        console.log('switch turn', state.playerTurn, state.countDownFakeMoves)
       }
     },
     setup(state){
@@ -193,9 +207,14 @@ export default new Vuex.Store({
       context.commit('winCase', payload)
     },
     movePawn(context, payload){
-      context.commit('movePawn', payload);
-      context.commit('toggleMove');
-      context.commit('switchTurn');
+      if (payload == 'auto'){
+          context.commit('movePawn', {fake: true});
+          context.commit('toggleMove');
+          // context.commit('switchTurn');
+      } else {
+        context.commit('movePawn');
+        context.commit('toggleMove');
+      }
     },
     generateStartCases(context, payload){
       context.commit('generateStartCases', payload)

@@ -14,8 +14,8 @@ export default {
         height(){
             return `
             height: ${this.$store.state.currentStack/this.$store.state.totalStack * 100}%;
-            background: ${this.$store.state.players[this.$store.state.playerTurn].color}
             `;
+            /* background: ${this.$store.state.players[this.$store.state.playerTurn].color} */
         },
 
     }
@@ -44,7 +44,7 @@ div{
         background:$gray06;
 
         #currentStack{
-            background: $gray04;
+            background: $gray02;
             width:100%;
         }
     }

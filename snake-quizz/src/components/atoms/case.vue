@@ -36,8 +36,8 @@ export default {
             this.myOwner = newOwner;
             this.color = this.$store.state.players[this.myOwner].color;
 
-            console.log('------------------ owner forced change -------------')
-                console.log(this.oldOwner, this.myOwner, this.idCase)
+            // console.log('------------------ owner forced change -------------')
+            // console.log(this.oldOwner, this.myOwner, this.idCase)
         }
     },
     computed:{
@@ -68,15 +68,15 @@ export default {
     watch:{
         owner : {
             handler(newval, oldval){
-                console.log('------------------ owner changed -------------')
-                console.log(newval, oldval, this.oldOwner, this.myOwner, this.idCase)
+                // console.log('------------------ owner changed -------------')
+                // console.log(newval, oldval, this.oldOwner, this.myOwner, this.idCase, this.color)
                 this.myOwner = newval;
             },
             deep: true
         },
         color : {
             handler(newval, oldval){
-                console.log('color changed', newval, oldval, this.oldOwner, this.myOwner, this.idCase)
+                // console.log('color changed', newval, oldval, this.oldOwner, this.myOwner, this.idCase)
             },
         },
     }

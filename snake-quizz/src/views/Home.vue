@@ -15,6 +15,11 @@
     <div class="alert" v-show="timeDown"> 
         <p>It's up to the <strong>{{$store.state.playerTurn}} team</strong> to play !</p>
     </div>
+
+    <div class="alert" v-if="gameEnded"> 
+        <p>Game Ended ! </p>
+        <p class="winTeam"><strong>{{winningTeam}}</strong> won with {{$store.state.players[winningTeam].cases.length}} cases!</p>
+    </div>
   </div>
 </template>
 
@@ -37,10 +42,21 @@ export default {
   computed:{
     notMyTurn(){
       return this.$store.state.playerTurn != "me";
+    },
+    gameEnded(){
+      return this.$store.state.currentStack == 0;
+    },
+    winningTeam(){
+      let territories =  Object.keys(this.$store.state.players).map(player => this.$store.state.players[player].cases)
+      let biggest = territories.reduce((acc, cur) => cur.length > acc.length ? cur : acc, []); 
+      return Object.keys(this.$store.state.players).find(player => {
+        return this.$store.state.players[player].cases === biggest;
+      })
     }
   },
   methods: {
     displayNewAlert(){
+      console.log('new alert', this.$store.state.playerTurn)
       this.timeDown = true ;
       setTimeout(() => this.timeDown = false, 2500)
     }

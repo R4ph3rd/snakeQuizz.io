@@ -79,19 +79,16 @@ export default {
         },
         choiceMade(){
             setTimeout(() => {
-                // if(this.$store.state.playerTurn == this.$store.state.me) 
                 if(this.correctOrWrong){
                     console.log('correct');
-                    this.toggleMove();
+                    this.toggleMove('correct');
                 } else {
                     console.log('wrong ! don"t move');
                     this.switchTurn('loose');
                 }
-
-                console.log(this.$store.state.move, this.$store.state.playerTurn)
                 
                 clearInterval(this.timer)
-                // this.$router.push('/');
+                this.$router.push('/');
             }, 2000)
         }
     },
